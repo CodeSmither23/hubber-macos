@@ -9,10 +9,13 @@ import SwiftUI
 
 struct MenuBarView: View {
     @State var items: [Message] = [.linkedin, .telegram, .whatsapp]
-    @State var isEditing = false
+
+    @State private var isEditing = false
+    @State private var iStacked = true
+    
     @State private var arrowOpacity = 1.0
     @State private var animationAmount = 1.0
-
+    
     var body: some View {
         VStack(spacing: .zero) {
             topView
@@ -115,32 +118,40 @@ extension MenuBarView {
     private var placeholderView: some View {
         VStack(spacing: 20) {
             Spacer()
-            
-            Image(.userIcon)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 50, height: 50)
-                .foregroundStyle(.blue)
-            
-            Text("Please add an account by pressing on the button below!")
-                .multilineTextAlignment(.center)
-                .font(.callout)
-            
-            Image(.arrowPointingDown)
-                .resizable()
-                .scaledToFit()
-                .frame(height: 20)
-                .foregroundStyle(.cyan)
-                .opacity(arrowOpacity)
-                .offset(y: animationAmount)
-                .onAppear {
-                    withAnimation {
-                        animateArrow()
-                    }
-                }
-            
+            placeholderIconView
+            placeholderTitleView
+            arrowView
             Spacer()
         }
+    }
+    
+    private var arrowView: some View {
+        Image(.arrowPointingDown)
+            .resizable()
+            .scaledToFit()
+            .frame(height: 20)
+            .foregroundStyle(.cyan)
+            .opacity(arrowOpacity)
+            .offset(y: animationAmount)
+            .onAppear {
+                withAnimation {
+                    animateArrow()
+                }
+            }
+    }
+    
+    private var placeholderTitleView: some View {
+        Text("Please add an account by pressing on the button below!")
+            .multilineTextAlignment(.center)
+            .font(.callout)
+    }
+    
+    private var placeholderIconView: some View {
+        Image(.userIcon)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 50, height: 50)
+            .foregroundStyle(.blue)
     }
     
     private func animateArrow() {
@@ -207,22 +218,17 @@ extension MenuBarView {
         }
         .buttonStyle(BorderlessButtonStyle())
         //        .keyboardShortcut("q")
+        //        .keyboardShortcut("1")
+    }
+    
+    private func offsetForIndex(_ index : Int) -> CGFloat {
+        CGFloat((items.count - index - 1) * (iStacked ? 4 : 45))
+    }
+    
+    private var stackHeight : CGFloat {
+        iStacked ? CGFloat(40 + items.count * 4) : CGFloat(items.count * 45)
     }
 }
-
-//    private var firstButton: some View {
-//        Button("Sign in") {
-//
-//        }
-//        .keyboardShortcut("1")
-//    }
-//
-//    private var secondButton: some View {
-//        Button("Sign out") {
-//            currentNumber = "2"
-//        }
-//        .keyboardShortcut("2")
-//    }
 
 //MARK: - preview
 #Preview("MenuBarView") {
