@@ -18,7 +18,7 @@ struct MenuBarView: View {
             topView
             Divider()
             
-            if !items.isEmpty {
+            if items.isEmpty {
                 placeholderView
             } else {
                 baseContentView
@@ -26,6 +26,7 @@ struct MenuBarView: View {
             
             bottomView
         }
+        .frame(width: 400)
     }
 }
 
@@ -51,7 +52,7 @@ extension MenuBarView {
                 }
             }
         }
-        .frame(minWidth: 400, minHeight: 350)
+        .frame(minHeight: 350)
         .padding(.horizontal, 8)
         .padding(.top, 10)
     }
@@ -76,8 +77,11 @@ extension MenuBarView {
             
             Spacer()
             
-            editButton
+            if !items.isEmpty {
+                editButton
+            }
         }
+        .frame(height: 50)
         .padding(.horizontal, 5)
     }
     
@@ -88,7 +92,7 @@ extension MenuBarView {
             }
         } label: {
             Text(isEditing ? "Done" : "Edit")
-                .padding()
+                .padding(.horizontal)
         }
         .buttonStyle(BorderlessButtonStyle())
     }
@@ -119,6 +123,7 @@ extension MenuBarView {
                 .foregroundStyle(.blue)
             
             Text("Please add an account by pressing on the button below!")
+                .multilineTextAlignment(.center)
                 .font(.callout)
             
             Image(.arrowPointingDown)
@@ -139,7 +144,7 @@ extension MenuBarView {
     }
     
     private func animateArrow() {
-        guard animationAmount < 50 else {
+        guard animationAmount < 40 else {
             animateArrow2()
             return
         }
