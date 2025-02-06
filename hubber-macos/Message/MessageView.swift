@@ -9,10 +9,7 @@ import SwiftUI
 
 struct CustomMessageView: View {
     let message: Message
-    @Binding var isEditing: Bool
     @Binding var isExpanded: Bool
-    
-    let onDelete: (_ message: Message) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -35,7 +32,7 @@ struct CustomMessageView: View {
                         .padding(.top, 4)
                 }
                 
-                Spacer()
+                Spacer(minLength: 30)
             }
         }
         .padding([.horizontal, .bottom], 10)
@@ -52,10 +49,6 @@ extension CustomMessageView {
             titleView
             Spacer()
             timeView
-            
-            if isEditing {
-                deleteButton
-            }
         }
         .padding(.top, 10)
         .background(.ultraThinMaterial)
@@ -76,40 +69,12 @@ extension CustomMessageView {
         Text(message.timeString)
             .font(.callout)
     }
-    
-    private var deleteButton: some View {
-        Button {
-            onDelete(message)
-        } label: {
-            Image(systemName: "trash")
-                .foregroundColor(.red)
-        }
-        .buttonStyle(BorderlessButtonStyle())
-        .padding(.horizontal, 10)
-    }
 }
 
 //MARK: - preview
 #Preview("CustomMessageView") {
-//    VStack {
-        CustomMessageView(
-            message: Message.linkedin,
-            isEditing: .constant(false),
-            isExpanded: .constant(true),
-            onDelete: { _ in }
-        )
-//        
-//        CustomMessageView(
-//            message: Message.telegram,
-//            isEditing: .constant(true),
-//            onDelete: { _ in }
-//        )
-//        
-//        CustomMessageView(
-//            message: Message.whatsapp,
-//            isEditing: .constant(false),
-//            onDelete: { _ in }
-//        )
-//    }
-//    .padding(.vertical)
+    CustomMessageView(
+        message: Message.linkedin,
+        isExpanded: .constant(true)
+    )
 }

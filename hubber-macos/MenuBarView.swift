@@ -10,14 +10,22 @@ import SwiftUI
 struct MenuBarView: View {
     @State var items: [Message] = [.linkedin, .telegram, .whatsapp]
     @State var isEditing = false
-    
+    @State private var arrowOpacity = 1.0
+    @State private var animationAmount = 1.0
+
     var body: some View {
         VStack(spacing: .zero) {
             topView
-            baseContentView
+            Divider()
+            
+            if !items.isEmpty {
+                placeholderView
+            } else {
+                baseContentView
+            }
+            
             bottomView
         }
-        .padding(.horizontal, 5)
     }
 }
 
@@ -25,43 +33,52 @@ struct MenuBarView: View {
 extension MenuBarView {
     private var baseContentView: some View {
         ScrollView(showsIndicators: false) {
-//            VStack(spacing: 10) {
-                ForEach(items, id: \.id) { item in
+            ForEach(items, id: \.id) { messageItem in
+                ZStack(alignment: .trailing) {
                     CustomMessageView(
-                        message: item,
-                        isEditing: $isEditing,
-                        isExpanded: .constant(false),
-                        onDelete: { message in
-                            items = items.filter({ $0 != message })
-                        }
+                        message: messageItem,
+                        isExpanded: .constant(false)
                     )
+                    
+                    if isEditing {
+                        deleteButton(with: messageItem)
+                    }
                 }
-//            }
+                
+                if messageItem == items.last {
+                    Spacer()
+                        .frame(height: 20)
+                }
+            }
         }
-        .frame(minWidth: 350, minHeight: 350)
-//        .overlay(alignment: .bottom, content: {
-//            shadowView
-//        })
+        .frame(minWidth: 400, minHeight: 350)
+        .padding(.horizontal, 8)
+        .padding(.top, 10)
     }
     
-//    @ViewBuilder
-//    private var shadowView: some View {
-//        Rectangle()
-//            .fill(.gray.opacity(0.2))
-//            .frame(height: 21)
-//            .shadow(color: .gray, radius: 8, x: 0, y: 3)
-//    }
+    private func deleteButton(with message: Message) -> some View {
+        Button {
+            items = items.filter{ $0 != message }
+        } label: {
+            Image(systemName: "trash")
+                .foregroundColor(.red)
+        }
+        .buttonStyle(BorderlessButtonStyle())
+        .padding(.trailing, 20)
+    }
     
     private var topView: some View {
         HStack(spacing: .zero) {
             Text("Hubber")
                 .font(.title2)
                 .opacity(0.1)
+                .padding(.leading, 5)
             
             Spacer()
             
             editButton
         }
+        .padding(.horizontal, 5)
     }
     
     private var editButton: some View {
@@ -78,6 +95,7 @@ extension MenuBarView {
     
     private var bottomView: some View {
         VStack(spacing: .zero) {
+            Divider()
             addAccountButton
             
             HStack(spacing: 20) {
@@ -86,8 +104,73 @@ extension MenuBarView {
                 quitButton
             }
             .frame(height: 30)
+            .padding(.bottom, 5)
         }
-        .padding(.vertical, 5)
+    }
+    
+    private var placeholderView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            Image(.userIcon)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 50, height: 50)
+                .foregroundStyle(.blue)
+            
+            Text("Please add an account by pressing on the button below!")
+                .font(.callout)
+            
+            Image(.arrowPointingDown)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 20)
+                .foregroundStyle(.cyan)
+                .opacity(arrowOpacity)
+                .offset(y: animationAmount)
+                .onAppear {
+                    withAnimation {
+                        animateArrow()
+                    }
+                }
+            
+            Spacer()
+        }
+    }
+    
+    private func animateArrow() {
+        guard animationAmount < 50 else {
+            animateArrow2()
+            return
+        }
+        animationAmount += 1
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+            animateArrow()
+        }
+    }
+    
+    private func animateArrow2() {
+        guard animationAmount > 1 else {
+            animateArrow()
+            return
+        }
+        
+        animationAmount -= 1
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.04) {
+            animateArrow2()
+        }
+    }
+    
+    private func resetAnimation() {
+        animationAmount = 0
+        arrowOpacity = 0
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            arrowOpacity = 1
+            animateArrow()
+        }
     }
     
     private var addAccountButton: some View {
@@ -96,8 +179,8 @@ extension MenuBarView {
         } label: {
             Text("Add an account")
         }
-        .padding()
         .buttonStyle(BorderlessButtonStyle())
+        .padding(.vertical, 15)
     }
     
     private var rateUsButton: some View {
@@ -139,4 +222,68 @@ extension MenuBarView {
 //MARK: - preview
 #Preview("MenuBarView") {
     MenuBarView()
+}
+
+
+
+
+
+
+struct ToDoItemModel {
+    var id = UUID()
+    var color : Color
+}
+
+struct ToDoItemView : View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 20)
+            .fill(Color.clear)
+            .frame(height: 40)
+    }
+}
+
+
+struct ContentView : View {
+    @State private var stacked = true
+    
+    var todos : [ToDoItemModel] = [
+        .init(color: .green),
+        .init(color: .pink),
+        .init(color: .orange),
+        .init(color: .blue)
+    ]
+    
+    func offsetForIndex(_ index : Int) -> CGFloat {
+        CGFloat((todos.count - index - 1) * (stacked ? 4 : 45))
+    }
+    
+    private var stackHeight : CGFloat {
+        stacked ? CGFloat(40 + todos.count * 4) : CGFloat(todos.count * 45)
+    }
+    
+    var body: some View {
+        VStack {
+            GeometryReader { reader in
+                ForEach(Array(todos.reversed().enumerated()), id: \.1.id) { (index, item) in
+                    ToDoItemView()
+                        .background(item.color)
+                        .cornerRadius(10)
+                        .padding(.horizontal, 24)
+                        .offset(x: 0, y: offsetForIndex(index))
+                        .zIndex(Double(index))
+                }
+            }
+            .frame(height: stackHeight)
+            Spacer()
+        }
+        .onTapGesture {
+            withAnimation {
+                stacked.toggle()
+            }
+        }
+    }
+}
+
+#Preview("gg") {
+    ContentView()
 }
